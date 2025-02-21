@@ -30,7 +30,7 @@ LEARNING_RATE = 1e-4
 FER_TO_STRESS = {
     "angry": "stres_sangat_tinggi",
     "happy": "stres_rendah",
-    "neutral": "stres_rendah",
+    "neutral": "stres_rendah_to_medium",
     "sad": "stres_tinggi",
     "surprise": "stres_sedang"
 }
