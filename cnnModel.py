@@ -8,10 +8,10 @@ from tensorflow.keras.optimizers import AdamW
 # Parameter model
 IMG_SIZE = (48, 48)
 BATCH_SIZE = 32
-EPOCHS = 50
+EPOCHS = 100
 
-# Data Augmentation yang lebih bervariasi
-train_datagen = ImageDataGenerator(
+# Data Augmentation
+augment_datagen = ImageDataGenerator(
     rescale=1./255,
     rotation_range=40,
     width_shift_range=0.2,
@@ -23,24 +23,47 @@ train_datagen = ImageDataGenerator(
     fill_mode='nearest'
 )
 
-test_datagen = ImageDataGenerator(rescale=1./255)
+# Data tanpa augmentasi
+original_datagen = ImageDataGenerator(rescale=1./255)
 
-# Load dataset
-generator_train = train_datagen.flow_from_directory(
+# Load dataset (tanpa augmentasi)
+generator_train_original = original_datagen.flow_from_directory(
     'dataset/train',
     target_size=IMG_SIZE,
     color_mode='grayscale',
-    batch_size=BATCH_SIZE,
+    batch_size=BATCH_SIZE // 2,  # Setengah batch untuk data asli
     class_mode='categorical'
 )
 
-generator_test = test_datagen.flow_from_directory(
+# Load dataset (dengan augmentasi)
+generator_train_augmented = augment_datagen.flow_from_directory(
+    'dataset/train',
+    target_size=IMG_SIZE,
+    color_mode='grayscale',
+    batch_size=BATCH_SIZE // 2,  # Setengah batch untuk data augmentasi
+    class_mode='categorical'
+)
+
+generator_test = original_datagen.flow_from_directory(
     'dataset/test',
     target_size=IMG_SIZE,
     color_mode='grayscale',
     batch_size=BATCH_SIZE,
     class_mode='categorical'
 )
+
+# Custom generator untuk menggabungkan data asli dan augmentasi
+def combined_generator(gen1, gen2):
+    while True:
+        batch1 = next(gen1)
+        batch2 = next(gen2)
+        yield (np.concatenate((batch1[0], batch2[0])), np.concatenate((batch1[1], batch2[1])))
+
+train_generator = combined_generator(generator_train_original, generator_train_augmented)
+
+# Menghitung jumlah langkah (steps per epoch)
+steps_per_epoch = (generator_train_original.samples + generator_train_augmented.samples) // BATCH_SIZE
+validation_steps = generator_test.samples // BATCH_SIZE
 
 # Residual Block dengan L2 Regularization
 def residual_block(x, filters):
@@ -59,7 +82,7 @@ def residual_block(x, filters):
 
 # Model CNN dengan Residual Blocks
 inputs = tf.keras.layers.Input(shape=(48, 48, 1))
-x = tf.keras.layers.BatchNormalization()(inputs)  # BatchNorm diawal
+x = tf.keras.layers.BatchNormalization()(inputs)
 
 x = tf.keras.layers.Conv2D(32, (3, 3), activation='relu', padding='same')(x)
 x = tf.keras.layers.BatchNormalization()(x)
@@ -82,7 +105,7 @@ x = tf.keras.layers.Dropout(0.5)(x)
 x = tf.keras.layers.Dense(128, activation='relu', kernel_regularizer=l2(1e-4))(x)
 x = tf.keras.layers.Dropout(0.5)(x)
 
-outputs = tf.keras.layers.Dense(generator_train.num_classes, activation='softmax')(x)
+outputs = tf.keras.layers.Dense(generator_train_original.num_classes, activation='softmax')(x)
 
 model = tf.keras.models.Model(inputs, outputs)
 
@@ -96,9 +119,11 @@ lr_scheduler = ReduceLROnPlateau(monitor='val_loss', factor=0.5, patience=3, ver
 checkpoint = ModelCheckpoint("best_model.h5", monitor="val_accuracy", save_best_only=True, verbose=1)
 
 # Training model
-model.fit(generator_train, 
+model.fit(train_generator, 
           validation_data=generator_test, 
           epochs=EPOCHS, 
+          steps_per_epoch=steps_per_epoch,
+          validation_steps=validation_steps,
           callbacks=[early_stopping, lr_scheduler, checkpoint])
 
 # Simpan model
