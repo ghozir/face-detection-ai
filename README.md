@@ -60,45 +60,33 @@ python3 visualData.py
 
 ---
 
-## Model Algorithm Overview
+## 🧠 Model Algorithm Overview
 
 The model uses a CNN-based architecture with residual blocks to classify facial expressions. Here's a high-level summary of the training process:
 
-1. Data Preparation:
+1. **Data Preparation**:
+   - Uses grayscale images resized to 48x48 pixels.
+   - Combines original and augmented data using `ImageDataGenerator` to improve generalization.
 
-    Uses grayscale images resized to 48x48 pixels.
+2. **Model Architecture**:
+   - Initial Conv2D layer with batch normalization and max pooling.
+   - Four stacked **residual blocks** with increasing filter sizes: 64, 128, 256, 512.
+   - Global average pooling followed by a dense layer and a softmax classifier.
 
-    Combines original and augmented data using ImageDataGenerator to improve generalization.
+3. **Training Configuration**:
+   - Optimizer: Adam with `learning_rate=1e-4`
+   - Loss function: Categorical Crossentropy with label smoothing
+   - Callbacks used:
+     - `EarlyStopping`: Stops training if `val_loss` doesn't improve after 10 epochs
+     - `ReduceLROnPlateau`: Reduces learning rate if `val_loss` stagnates for 5 epochs
+     - `ModelCheckpoint`: Saves the best model based on validation loss
+     - `CSVLogger`: Logs training history to a timestamped CSV file
 
-2. Model Architecture:
+4. **Model Output**:
+   - Trained model is saved as `finalModel.h5`
+   - Best model (based on lowest validation loss) is saved as `bestModel.h5`
 
-    Initial Conv2D layer with batch normalization and max pooling.
-
-    Four stacked residual blocks with increasing filter sizes: 64, 128, 256, 512.
-
-    Global average pooling followed by a dense layer and a softmax classifier.
-
-3. Training Configuration:
-
-    Optimizer: Adam with learning_rate=1e-4
-
-    Loss function: Categorical Crossentropy with label smoothing
-
-        Callbacks used:
-
-            EarlyStopping: Stops training if val_loss doesn't improve after 10 epochs
-
-            ReduceLROnPlateau: Reduces learning rate if val_loss stagnates for 5 epochs
-
-            ModelCheckpoint: Saves the best model based on validation loss
-
-            CSVLogger: Logs training history to a timestamped CSV file
-
-4. Model Output:
-
-    Trained model is saved as finalModel.h5
-
-    Best model (based on lowest validation loss) is saved as bestModel.h5
+---
 
 ## 👨‍💼 Author
 
