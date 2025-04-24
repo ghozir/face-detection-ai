@@ -2,9 +2,10 @@ import numpy as np
 import tensorflow as tf
 import os
 from tensorflow.keras.preprocessing.image import ImageDataGenerator
-from tensorflow.keras.callbacks import EarlyStopping, ReduceLROnPlateau, ModelCheckpoint
+from tensorflow.keras.callbacks import EarlyStopping, ReduceLROnPlateau, ModelCheckpoint, CSVLogger
 from tensorflow.keras.regularizers import l2
 from tensorflow.keras.optimizers import Adam
+from datetime import datetime
 import matplotlib.pyplot as plt
 
 # Debug GPU
@@ -27,6 +28,13 @@ IMG_SIZE = (48, 48)
 BATCH_SIZE = 32
 EPOCHS = 100
 
+# Bikin folder log kalau belum ada
+os.makedirs('logs', exist_ok=True)
+
+# Bikin nama file dengan timestamp
+timestamp = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
+log_filename = f'logs/training_log_{timestamp}.csv'
+
 # Data Augmentation
 augment_datagen = ImageDataGenerator(
     rescale=1./255,
@@ -44,7 +52,7 @@ original_datagen = ImageDataGenerator(rescale=1./255)
 
 # Load dataset
 generator_train_original = original_datagen.flow_from_directory(
-    'dataset/train',
+    'datasets/train',
     target_size=IMG_SIZE,
     color_mode='grayscale',
     batch_size=BATCH_SIZE // 2,
@@ -52,7 +60,7 @@ generator_train_original = original_datagen.flow_from_directory(
 )
 
 generator_train_augmented = augment_datagen.flow_from_directory(
-    'dataset/train',
+    'datasets/train',
     target_size=IMG_SIZE,
     color_mode='grayscale',
     batch_size=BATCH_SIZE // 2,
@@ -60,7 +68,7 @@ generator_train_augmented = augment_datagen.flow_from_directory(
 )
 
 generator_test = original_datagen.flow_from_directory(
-    'dataset/test',
+    'datasets/test',
     target_size=IMG_SIZE,
     color_mode='grayscale',
     batch_size=BATCH_SIZE,
@@ -126,11 +134,13 @@ model.compile(
 )
 
 # Callback
+# Bikin logger-nya
+csv_logger = CSVLogger(log_filename, append=False)
 early_stopping = EarlyStopping(monitor='val_loss', patience=10, restore_best_weights=True)
 reduce_lr = ReduceLROnPlateau(monitor='val_loss', factor=0.5, patience=5)
-model_checkpoint = ModelCheckpoint('best_model.h5', monitor='val_loss', save_best_only=True)
+model_checkpoint = ModelCheckpoint('bestModel.h5', monitor='val_loss', save_best_only=True)
 
-callbacks = [early_stopping, reduce_lr, model_checkpoint]
+callbacks = [early_stopping, reduce_lr, model_checkpoint,csv_logger]
 
 # Latih model
 history = model.fit(
@@ -142,4 +152,4 @@ history = model.fit(
     callbacks=callbacks
 )
 
-model.save('final_model.h5')
+model.save('finalModel.h5')

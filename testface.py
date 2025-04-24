@@ -5,7 +5,7 @@ from tensorflow.keras.preprocessing.image import img_to_array
 import json
 
 # Load model yang sudah dilatih
-MODEL_PATH = "./app/models/stress_detection_model.keras"
+MODEL_PATH = "final_model.h5"
 LABELS_PATH = "./app/models/class_indices.json"
 FER_TO_STRESS = {
     "angry": "stres_sangat_tinggi",
