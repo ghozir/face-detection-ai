@@ -1,22 +1,51 @@
+"""
+Training Log Plotter and Summary
+
+This script loads the most recent training log CSV from the 'logs/' directory,
+plots accuracy and loss curves over epochs, saves the resulting figure,
+and prints a summary of final and best validation metrics.
+"""
+
+import os
+from glob import glob
+from datetime import datetime
+
 import pandas as pd
 import matplotlib.pyplot as plt
-import os
-from datetime import datetime
-from glob import glob
-import seaborn as sns
 
-# --- Load CSV Log File ---
-log_files = sorted(glob('logs/training_log_2025-04-23_18-37-07.csv'), key=os.path.getmtime, reverse=True)
-latest_log_file = log_files[0] if log_files else None
+# ====================
+# Locate Latest Log File
+# ====================
+"""
+Finds the most recent CSV log file in the 'logs/' folder by modification time.
+Raises FileNotFoundError if no logs are present.
+"""
+log_folder = 'logs'
+csv_pattern = os.path.join(log_folder, 'training_log_*.csv')
+log_files = sorted(glob(csv_pattern), key=os.path.getmtime, reverse=True)
+if not log_files:
+    raise FileNotFoundError(f"❌ No log files found in '{log_folder}/'.")
+latest_log_file = log_files[0]
+print(f"✅ Loading log file: {latest_log_file}")
 
-if not latest_log_file:
-    raise FileNotFoundError("❌ Tidak ditemukan file log di folder 'logs/'.")
-
+# ====================
+# Load CSV into DataFrame
+# ====================
+"""
+Reads the training log CSV into a pandas DataFrame for plotting.
+"""
 df = pd.read_csv(latest_log_file)
 
-# --- Plot Training Metrics ---
+# ====================
+# Plot Training Metrics
+# ====================
+"""
+Plots training and validation accuracy and loss over each epoch,
+and saves the figure to 'logs/plotImage.png'.
+"""
 plt.figure(figsize=(14, 6))
 
+# Accuracy subplot
 plt.subplot(1, 2, 1)
 plt.plot(df['epoch'], df['accuracy'], label='Train Accuracy')
 plt.plot(df['epoch'], df['val_accuracy'], label='Validation Accuracy')
@@ -26,6 +55,7 @@ plt.ylabel('Accuracy')
 plt.legend()
 plt.grid(True)
 
+# Loss subplot
 plt.subplot(1, 2, 2)
 plt.plot(df['epoch'], df['loss'], label='Train Loss')
 plt.plot(df['epoch'], df['val_loss'], label='Validation Loss')
@@ -37,24 +67,30 @@ plt.grid(True)
 
 plt.tight_layout()
 
-# Simpan plot ke file
-plot_filename = f'logs/plotImage.png'
+# Save the plot image
+date_str = datetime.now().strftime("%Y%m%d_%H%M%S")
+plot_filename = os.path.join(log_folder, f'plot_{date_str}.png')
 plt.savefig(plot_filename)
-print(f"✅ Grafik disimpan ke: {plot_filename}")
+print(f"✅ Plot saved to: {plot_filename}")
 
-# --- Training Summary ---
+# ====================
+# Training Summary
+# ====================
+"""
+Computes and prints a summary including final and best validation accuracy and the epoch at which it occurred.
+"""
 final_train_acc = df['accuracy'].iloc[-1]
 final_val_acc = df['val_accuracy'].iloc[-1]
 best_val_acc = df['val_accuracy'].max()
-best_epoch = df['val_accuracy'].idxmax()
+best_epoch = int(df.loc[df['val_accuracy'].idxmax(), 'epoch'])
 
-summary = {
-    "Log File": os.path.basename(latest_log_file),
-    "Final Train Accuracy": round(final_train_acc, 4),
-    "Final Validation Accuracy": round(final_val_acc, 4),
-    "Best Validation Accuracy": round(best_val_acc, 4),
-    "Best Epoch": int(df['epoch'][best_epoch])
-}
+summary = pd.DataFrame([{
+    'Log File': os.path.basename(latest_log_file),
+    'Final Train Accuracy': round(final_train_acc, 4),
+    'Final Validation Accuracy': round(final_val_acc, 4),
+    'Best Validation Accuracy': round(best_val_acc, 4),
+    'Best Epoch': best_epoch
+}])
 
 print("\n📊 Training Summary:")
-print(pd.DataFrame([summary]).to_string(index=False))
+print(summary.to_string(index=False))

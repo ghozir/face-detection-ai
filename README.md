@@ -9,7 +9,7 @@ The model is trained to recognize facial emotions and provide insights into stre
 
 1. **Clone this repository**
 ```bash
-git clone https://github.com/username/face-detection-ai.git
+git clone https://github.com/ghozir/face-detection-ai.git
 cd face-detection-ai
 ```
 
@@ -34,12 +34,12 @@ pip install -r requirements.txt
 
 ### 🔧 To Train the Model:
 ```bash
-python3 main-training.py
+python3 trainingCnn.py
 ```
 
 ### 🧪 To Test the Model:
 ```bash
-python3 modelTest.py
+python3 modelTestMediapipe.py
 ```
 
 ### 📊 To Visualize Training Statistics (Accuracy & Loss):
@@ -53,8 +53,8 @@ python3 visualData.py
 
 | File | Description |
 |------|-------------|
-| `cnnModelPart2.py` | The main CNN model architecture for facial expression detection. |
-| `modelTest.py` | Evaluates the trained model on test data. |
+| `trainingCnn.py` | The main CNN model architecture for facial expression detection. |
+| `modelTestMediapipe.py` | Evaluates the trained model on test data. |
 | `visualData.py` | Displays and saves accuracy and loss graphs per epoch. |
 | `requirements.txt` | List of required dependencies. |
 
@@ -83,15 +83,15 @@ The model uses a CNN-based architecture with residual blocks to classify facial 
      - `CSVLogger`: Logs training history to a timestamped CSV file
 
 4. **Model Output**:
-   - Trained model is saved as `finalModel.h5`
-   - Best model (based on lowest validation loss) is saved as `bestModel.h5`
+   - Trained model is saved as `models/finalModel.h5`
+   - Best model (based on lowest validation loss) is saved as `models/bestModel.h5`
 
 ---
 
 ## 👨‍💼 Author
 
 This program was created by **Ghozi Rabbani**  
-Feel free to contribute, fork, or give stars ⭐ if this project helps you!
+Feel free to fork!
 
 ---
 
