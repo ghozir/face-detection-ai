@@ -34,17 +34,17 @@ pip install -r requirements.txt
 
 ### 🔧 To Train the Model:
 ```bash
-python3 trainingCnn.py
+python3 scripts/trainingCnn.py
 ```
 
 ### 🧪 To Test the Model:
 ```bash
-python3 modelTestMediapipe.py
+python3 scripts/modelTestMediapipe.py
 ```
 
 ### 📊 To Visualize Training Statistics (Accuracy & Loss):
 ```bash
-python3 visualData.py
+python3 scripts/visualData.py
 ```
 
 ---
