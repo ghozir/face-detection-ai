@@ -16,6 +16,7 @@ from tensorflow.keras.preprocessing.image import ImageDataGenerator
 from tensorflow.keras.callbacks import EarlyStopping, ReduceLROnPlateau, ModelCheckpoint, CSVLogger
 from tensorflow.keras.regularizers import l2
 from tensorflow.keras.optimizers import Adam
+import subprocess
 
 # ====================
 # GPU Detection & Configuration
@@ -37,7 +38,7 @@ else:
 # ====================
 # Parameters
 # ====================
-IMG_SIZE = (48, 48)
+IMG_SIZE = (64, 64)
 BATCH_SIZE = 32
 EPOCHS = 100
 
@@ -189,3 +190,12 @@ history = model.fit(
 model.save('models/finalModel.h5')
 
 print("\n✅ Training finished and model saved!")
+
+# Jalankan evaluation.py langsung
+print("🚀 Starting evaluation...")
+subprocess.run([
+    'python', '-m', 'src.evaluation',
+    'models/finalModel.h5',
+    'datasets/test',
+    '64'
+])

@@ -24,6 +24,9 @@ stress_map = {
 # Inisialisasi detektor wajah
 face_cascade = cv2.CascadeClassifier(cv2.data.haarcascades + 'haarcascade_frontalface_default.xml')
 
+# Set threshold confidence
+confidence_threshold = 0.5  # 🔥 [NEW] Tambahan threshold 0.5
+
 # Buka kamera
 cap = cv2.VideoCapture(0)
 
@@ -57,13 +60,17 @@ while True:
 
         # Inferensi cepat via tf.function tanpa overhead predict()
         preds = infer(input_tensor).numpy()
+
+        # Ambil confidence dan kelas
         idx = np.argmax(preds)
-        label = class_labels[idx]
-        stress = stress_map.get(label, 'Unknown')
+        confidence = np.max(preds)  # 🔥 [NEW] Tambahan confidence value
+        label = class_labels[idx] if confidence >= confidence_threshold else "Ambiguous"  # 🔥 [NEW] Ubah label kalau rendah
+        stress = stress_map.get(label, 'Unknown') if label != "Ambiguous" else "Unknown"  # 🔥 [NEW] Kalau ambiguous, stress unknown
 
         # Gambar hasil
+        text = f'{label} | {stress} ({confidence:.2f})'  # 🔥 [NEW] Tambahin confidence ke display
         cv2.rectangle(frame, (x_orig, y_orig), (x_orig+w_orig, y_orig+h_orig), (255, 0, 0), 2)
-        cv2.putText(frame, f'{label} | {stress}', (x_orig, y_orig-10),
+        cv2.putText(frame, text, (x_orig, y_orig-10),
                     cv2.FONT_HERSHEY_SIMPLEX, 0.7, (0, 255, 0), 2)
 
     cv2.imshow('Real-Time Stress Detector', frame)

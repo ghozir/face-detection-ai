@@ -144,10 +144,8 @@ venv.bak/
 .ropeproject
 
 # mkdocs documentation
-/site
-/datasets
-/logs
-
+datasets/
+logs/
 # mypy
 .mypy_cache/
 .dmypy.json
