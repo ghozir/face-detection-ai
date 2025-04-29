@@ -3,7 +3,7 @@ import numpy as np
 import tensorflow as tf
 
 # Load model dan wrap inferensi dengan tf.function untuk kinerja lebih baik
-model = tf.keras.models.load_model('finalModel.h5')
+model = tf.keras.models.load_model('models/finalModel.h5')
 infer = tf.function(lambda x: model(x, training=False))
 
 # Warm-up untuk menghindari lag pada deteksi pertama

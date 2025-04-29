@@ -21,7 +21,7 @@ Finds the most recent CSV log file in the 'logs/' folder by modification time.
 Raises FileNotFoundError if no logs are present.
 """
 log_folder = 'logs'
-csv_pattern = os.path.join(log_folder, 'training_log_*.csv')
+csv_pattern = os.path.join(log_folder, 'training_log_2025-04-25_23-51-17.csv') # Replace with your log file pattern
 log_files = sorted(glob(csv_pattern), key=os.path.getmtime, reverse=True)
 if not log_files:
     raise FileNotFoundError(f"❌ No log files found in '{log_folder}/'.")
@@ -68,8 +68,7 @@ plt.grid(True)
 plt.tight_layout()
 
 # Save the plot image
-date_str = datetime.now().strftime("%Y%m%d_%H%M%S")
-plot_filename = os.path.join(log_folder, f'plot_{date_str}.png')
+plot_filename = os.path.join(log_folder, f'plotResult.png')
 plt.savefig(plot_filename)
 print(f"✅ Plot saved to: {plot_filename}")
 
