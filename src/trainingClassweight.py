@@ -28,7 +28,7 @@ else:
 
 # ==================== PARAMETER ====================
 IMG_SIZE = (64, 64)
-BATCH_SIZE = 32
+BATCH_SIZE = 64
 EPOCHS = 100
 
 os.makedirs('logs', exist_ok=True)
