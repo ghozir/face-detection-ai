@@ -39,20 +39,20 @@ log_filename = os.path.join('logs', f'training_log_{timestamp}.csv')
 # ==================== DATASET ====================
 augment_datagen = ImageDataGenerator(
     rescale=1./255,
-    rotation_range=40,
-    width_shift_range=0.2,
-    height_shift_range=0.2,
-    shear_range=0.2,
-    zoom_range=0.2,
+    rotation_range=15,
+    width_shift_range=0.1,
+    height_shift_range=0.1,
+    shear_range=0.1,
+    zoom_range=0.1,
     horizontal_flip=True,
-    brightness_range=[0.5, 1.5],
+    brightness_range=[0.7, 1.3],
     fill_mode='nearest'
 )
 
 datagen_test = ImageDataGenerator(rescale=1./255)
 
 train_generator = augment_datagen.flow_from_directory(
-    'datasets/train',
+    'datasets/raf-db/train',
     target_size=IMG_SIZE,
     color_mode='grayscale',
     batch_size=BATCH_SIZE,
@@ -61,7 +61,7 @@ train_generator = augment_datagen.flow_from_directory(
 )
 
 generator_test = datagen_test.flow_from_directory(
-    'datasets/test',
+    'datasets/raf-db/test',
     target_size=IMG_SIZE,
     color_mode='grayscale',
     batch_size=BATCH_SIZE,
@@ -171,6 +171,6 @@ print("🚀 Starting evaluation...")
 subprocess.run([
     'python', '-m', 'src.evaluation',
     'models/finalModel.h5',
-    'datasets/test',
+    'datasets/raf-db/test',
     '64'
 ])
