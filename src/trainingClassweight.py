@@ -143,14 +143,55 @@ model.compile(
     metrics=['accuracy']
 )
 
+# ==================== CUSTOM CALLBACK FOR NAMED SAVING ====================
+class SaveModelWithMetrics(tf.keras.callbacks.Callback):
+    def __init__(self, prefix='bestModel', save_best=True, monitor='val_loss', mode='min'):
+        super().__init__()
+        self.prefix = prefix
+        self.save_best = save_best
+        self.monitor = monitor
+        self.mode = mode
+        self.best_value = np.Inf if mode == 'min' else -np.Inf
+
+    def on_epoch_end(self, epoch, logs=None):
+        if logs is None:
+            return
+
+        metric = logs.get(self.monitor, None)
+        if metric is None:
+            return
+
+        if self.save_best:
+            val_acc = logs.get('val_accuracy', 0.0)
+            train_acc = logs.get('accuracy', 0.0)
+
+            save_condition = (
+                (self.mode == 'min' and metric < self.best_value) or
+                (self.mode == 'max' and metric > self.best_value)
+            )
+
+            if save_condition:
+                self.best_value = metric
+                acc_str = f"{train_acc:.4f}".replace('.', '_')
+                val_acc_str = f"{val_acc:.4f}".replace('.', '_')
+                filename = f"models/{self.prefix}_val{val_acc_str}_acc{acc_str}.h5"
+                self.model.save(filename)
+                print(f"📁 Saved {self.prefix} model at: {filename}")
+        else:
+            # Simpan model setiap epoch dengan nama tetap (overwrite)
+            filename = f"models/{self.prefix}.h5"
+            self.model.save(filename)
+            print(f"💾 Saved last model checkpoint: {filename}")
+
 # ==================== CALLBACKS ====================
 csv_logger = CSVLogger(log_filename)
 early_stopping = EarlyStopping(monitor='val_loss', patience=10, restore_best_weights=True)
 reduce_lr = ReduceLROnPlateau(monitor='val_loss', factor=0.5, patience=5)
-model_checkpoint_best = ModelCheckpoint('models/bestModel.h5', monitor='val_loss', save_best_only=True)
-model_checkpoint_last = ModelCheckpoint('models/lastModel.h5', save_best_only=False)
 
-callbacks = [csv_logger, early_stopping, reduce_lr, model_checkpoint_best, model_checkpoint_last]
+save_best = SaveModelWithMetrics(prefix='bestModel', save_best=True, monitor='val_loss', mode='min')
+save_last = SaveModelWithMetrics(prefix='lastModel', save_best=False)
+
+callbacks = [csv_logger, early_stopping, reduce_lr, save_best, save_last]
 
 # ==================== TRAINING ====================
 history = model.fit(
@@ -162,15 +203,23 @@ history = model.fit(
     callbacks=callbacks,
     class_weight=class_weights_dict
 )
-
-# ==================== SAVE ====================
+# ==================== SAVE FINAL MODEL WITH METRICS ====================
 model.save('models/finalModel.h5')
-print("\n✅ Training finished and model saved!")
+
+final_acc = history.history['accuracy'][-1]
+final_val_acc = history.history['val_accuracy'][-1]
+acc_str = f"{final_acc:.4f}".replace(".", "_")
+val_acc_str = f"{final_val_acc:.4f}".replace(".", "_")
+
+final_model_renamed = f"models/finalModel_val{val_acc_str}_acc{acc_str}.h5"
+os.rename("models/finalModel.h5", final_model_renamed)
+
+print(f"\n✅ Final model renamed to: {final_model_renamed}")
 
 print("🚀 Starting evaluation...")
 subprocess.run([
     'python', '-m', 'src.evaluation',
-    'models/finalModel.h5',
+    final_model_renamed,
     'datasets/raf-db/test',
     '64'
 ])

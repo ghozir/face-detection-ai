@@ -4,7 +4,7 @@ from tensorflow.keras.preprocessing.image import img_to_array, load_img, ImageDa
 import os
 
 # ======== Konfigurasi ========
-IMG_PATH = 'datasets/train/angry/train_00070_aligned.jpg'
+IMG_PATH = 'datasets/raf-db-original/train/sad/train_00025_aligned.jpg'
 IMG_SIZE = (64, 64)
 SAVE_PATH = "logs/hasil_augmentasi_grayscale.png"
 os.makedirs("logs", exist_ok=True)
@@ -21,13 +21,14 @@ img_array_exp = np.expand_dims(img_array, axis=0)
 
 # ======== Augmentasi Generator ========
 augment_datagen = ImageDataGenerator(
-    rotation_range=10,
-    width_shift_range=0.05,
-    height_shift_range=0.05,
-    shear_range=0.05,
+    rescale=1./255,
+    rotation_range=15,
+    width_shift_range=0.1,
+    height_shift_range=0.1,
+    shear_range=0.1,
     zoom_range=0.1,
     horizontal_flip=True,
-    brightness_range=[0.95, 1.05],
+    brightness_range=[0.7, 1.3],
     fill_mode='nearest'
 )
 

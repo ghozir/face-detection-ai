@@ -21,7 +21,7 @@ Finds the most recent CSV log file in the 'logs/' folder by modification time.
 Raises FileNotFoundError if no logs are present.
 """
 log_folder = 'logs'
-csv_pattern = os.path.join(log_folder, 'training_log_2025-04-25_23-51-17.csv') # Replace with your log file pattern
+csv_pattern = os.path.join(log_folder, 'finetune_log_2025-07-30_18-30-32.csv') # Replace with your log file pattern
 log_files = sorted(glob(csv_pattern), key=os.path.getmtime, reverse=True)
 if not log_files:
     raise FileNotFoundError(f"❌ No log files found in '{log_folder}/'.")

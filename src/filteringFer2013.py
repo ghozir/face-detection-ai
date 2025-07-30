@@ -6,15 +6,18 @@ import cv2
 
 # ========== CONFIG ==========
 IMG_SIZE = (64, 64)
-CONFIDENCE_THRESHOLD = 0.5
-INPUT_BASE = 'datasets/fer2013/train'
-OUTPUT_BASE = 'datasets/filter'
-MODEL_PATH = 'models/bestModel.h5'
+CONFIDENCE_THRESHOLD = 0.50
+INPUT_BASE = 'datasets/fer2013/test'
+OUTPUT_BASE = 'datasets/filterTestIterasi3'
+MODEL_PATH = 'models/fineTunedModel_val0_6619_acc0_6465.h5'
 
 # ========== LOAD MODEL ==========
 model = tf.keras.models.load_model(MODEL_PATH)
 
-# Sesuai urutan klasifikasi training
+# Kelas target yang ingin diproses
+target_classes = ['angry', 'disgust', 'fear','surprise']
+
+# Urutan klasifikasi sesuai pelatihan
 class_names = ['angry', 'disgust', 'fear', 'happy', 'neutral', 'sad', 'surprise']
 class_name_to_idx = {name: i for i, name in enumerate(class_names)}
 
@@ -38,6 +41,10 @@ for label_folder in os.listdir(INPUT_BASE):
     if not os.path.isdir(label_path):
         continue
 
+    # Hanya proses folder yang termasuk dalam target
+    if label_folder not in target_classes:
+        continue
+
     for filename in os.listdir(label_path):
         if not filename.lower().endswith(('.png', '.jpg', '.jpeg')):
             continue
@@ -54,8 +61,12 @@ for label_folder in os.listdir(INPUT_BASE):
         confidence = preds[0][pred_idx]
         pred_label = class_names[pred_idx]
 
-        # Validasi prediksi VS label asli (folder)
-        if pred_label == label_folder and confidence >= CONFIDENCE_THRESHOLD:
+        # Filter hanya jika prediksi sesuai label asli, confidence tinggi, dan label termasuk target
+        if (
+            pred_label == label_folder and
+            confidence >= CONFIDENCE_THRESHOLD and
+            pred_label in target_classes
+        ):
             save_dir = os.path.join(OUTPUT_BASE, pred_label)
             os.makedirs(save_dir, exist_ok=True)
             shutil.copy(file_path, os.path.join(save_dir, filename))
