@@ -39,13 +39,12 @@ log_filename = os.path.join('logs', f'training_log_{timestamp}.csv')
 # ==================== DATASET ====================
 augment_datagen = ImageDataGenerator(
     rescale=1./255,
-    rotation_range=15,
+    rotation_range=10,
     width_shift_range=0.1,
     height_shift_range=0.1,
     shear_range=0.1,
     zoom_range=0.1,
     horizontal_flip=True,
-    brightness_range=[0.7, 1.3],
     fill_mode='nearest'
 )
 
@@ -125,6 +124,9 @@ x = residual_block(x, 128, block_num=2)
 x = tf.keras.layers.MaxPooling2D((2, 2), name='pool2')(x)
 x = residual_block(x, 256, block_num=3)
 x = residual_block(x, 512, block_num=4)
+x = residual_block(x, 512, block_num=5)
+x = residual_block(x, 512, block_num=6)
+
 
 x = tf.keras.layers.GlobalAveragePooling2D(name='avg_pool')(x)
 x = tf.keras.layers.Dense(128, kernel_regularizer=l2(1e-4), name='fc1')(x)
@@ -138,7 +140,7 @@ model = tf.keras.Model(inputs=inputs, outputs=outputs, name='ResNet_StressClassi
 
 # ==================== COMPILE ====================
 model.compile(
-    optimizer=Adam(learning_rate=1e-4),
+    optimizer=Adam(learning_rate=1e-5),
     loss=tf.keras.losses.CategoricalCrossentropy(label_smoothing=0.1),
     metrics=['accuracy']
 )
@@ -185,7 +187,7 @@ class SaveModelWithMetrics(tf.keras.callbacks.Callback):
 
 # ==================== CALLBACKS ====================
 csv_logger = CSVLogger(log_filename)
-early_stopping = EarlyStopping(monitor='val_loss', patience=10, restore_best_weights=True)
+early_stopping = EarlyStopping(monitor='val_loss', patience=15, restore_best_weights=True)
 reduce_lr = ReduceLROnPlateau(monitor='val_loss', factor=0.5, patience=5)
 
 save_best = SaveModelWithMetrics(prefix='bestModel', save_best=True, monitor='val_loss', mode='min')
